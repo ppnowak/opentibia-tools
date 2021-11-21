@@ -4,8 +4,14 @@
   "description": "Tibia.dat editor",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "unpack-dat": "node index.js --mode=unpack-dat",
+    "pack-dat": "node index.js --mode=pack-dat"
   },
   "author": "czarnowidz",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "async": "^3.2.2",
+    "replace-color": "^2.3.0",
+    "yargs": "^17.2.1"
+  }
 }

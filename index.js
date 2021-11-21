@@ -1,13 +1,29 @@
 const fs = require('fs');
+const TibiaDatLoader = require('./src/dat-loader');
+const { getArguments, log } = require('./src/utils');
 
-const TibiaDatLoader = require('./src/tibia-dat-reader');
+const argv = getArguments();
 
-// const fileDir = "tibia.dat";
-// const { headers, items } = TibiaDatLoader.read(fileDir);
-// console.log(headers);
-// const jsonToText = (obj) => JSON.stringify(obj, null, 2);
-// fs.writeFileSync("tibiaDat.json", jsonToText({ headers, items }));
+log(`Starting program ${argv.mode}`);
+switch (argv.mode) {
+    
+    case 'unpack-dat': {
+        const [ datFile, jsonFile ] = argv._;
+        const data = TibiaDatLoader.read(datFile);
+        fs.writeFileSync(jsonFile, JSON.stringify(data, null, 2));
+        log(`File ${datFile} was unpacked into ${jsonFile}`);
+        break;
+    }
 
-const data = require('./tibiaDat.json');
-const fileDir = "newFile.dat";
-TibiaDatLoader.write(fileDir, data);
+    case 'pack-dat': {
+        const [ jsonFile, datFile ] = argv._;
+        const data = fs.readFileSync(jsonFile);
+        TibiaDatLoader.write(datFile, JSON.parse(data));
+        log(`File ${jsonFile} was packed into ${datFile}`);
+        break;
+    }
+
+    default:
+        log(`Mode ${argv.mode} is not supported!`);
+
+}

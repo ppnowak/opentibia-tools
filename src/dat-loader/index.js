@@ -86,7 +86,7 @@ const writeItems = (fileReader, items) => {
 }
 
 const read = (directory) => {
-    const fileReader = require("./file-utils");
+    const fileReader = require("../utils");
     fileReader.open(directory);
     const headers = readHeaders(fileReader);
     const items = readItems(fileReader, headers);
@@ -96,7 +96,7 @@ const read = (directory) => {
 
 const write = (directory, data) => {
     const { headers, items } = data;
-    const fileReader = require("./file-utils");
+    const fileReader = require("../utils");
     fileReader.open(directory, 'w');
     writeHeaders(fileReader, headers);
     writeItems(fileReader, items);

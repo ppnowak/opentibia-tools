@@ -1,5 +1,5 @@
 const fs = require('fs');
-const { bufferToNumber, numberToBuffer } = require('./utils');
+const { bufferToNumber, numberToBuffer } = require('./utils.js');
 
 let CURRENT_POSITION = -1;
 let BUFFER_SIZE = -1;

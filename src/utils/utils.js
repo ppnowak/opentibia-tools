@@ -1,3 +1,6 @@
+const yargs = require('yargs/yargs')
+const { hideBin } = require('yargs/helpers')
+
 const bufferToNumber = buffer => {
     let val = 0, factor = 1;
     for (let i=0; i<buffer.length; i++) {
@@ -17,4 +20,8 @@ const numberToBuffer = (number, length) => {
     return Buffer.from(buff);
 }
 
-module.exports = { bufferToNumber, numberToBuffer };
+const getArguments = () => yargs(hideBin(process.argv)).argv;
+
+const log = (msg) => console.log(`[${new Date().toISOString()}] ${msg}`);
+
+module.exports = { bufferToNumber, numberToBuffer, getArguments, log };

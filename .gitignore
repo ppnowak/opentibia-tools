@@ -1,2 +1,6 @@
 *.dat
 *.json
+*.png
+*.psb
+*.gif
+node_modules
