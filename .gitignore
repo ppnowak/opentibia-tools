@@ -1,6 +1,8 @@
+node_modules
 *.dat
+*.spr
 *.json
 *.png
 *.psb
 *.gif
-node_modules
+*.bmp

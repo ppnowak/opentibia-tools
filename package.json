@@ -5,12 +5,14 @@
   "main": "index.js",
   "scripts": {
     "unpack-dat": "node index.js --mode=unpack-dat",
-    "pack-dat": "node index.js --mode=pack-dat"
+    "pack-dat": "node index.js --mode=pack-dat",
+    "unpack-spr": "node index.js --mode=unpack-spr"
   },
   "author": "czarnowidz",
   "license": "ISC",
   "dependencies": {
     "async": "^3.2.2",
+    "jimp": "^0.16.1",
     "replace-color": "^2.3.0",
     "yargs": "^17.2.1"
   }

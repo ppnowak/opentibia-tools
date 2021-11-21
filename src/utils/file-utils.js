@@ -14,6 +14,8 @@ const open = (dir, mode = 'r') => {
 
 const close = () => fs.closeSync(FILE_HANDLE);
 
+const setPosition = (pos) => CURRENT_POSITION = pos;
+
 const hasMore = () => CURRENT_POSITION < BUFFER_SIZE;
 
 const readBytes = (length) => {
@@ -47,4 +49,4 @@ const writeByteNumbers = array => {
     }
 }
 
-module.exports = { open, readNumber, writeNumber, readByteNumbers, writeByteNumbers, hasMore, close };
+module.exports = { open, readNumber, writeNumber, readByteNumbers, writeByteNumbers, hasMore, close, setPosition };
