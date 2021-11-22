@@ -91,6 +91,18 @@ const writeObjects = ({items, creatures, distants, effects}) => {
     }
 }
 
+const recalculate = (data) => {
+    let id = 100;
+    for (const type of [data.items, data.creatures, data.effects, data.distants]) {
+      let typeId = 1;
+      for (const obj of type) {
+        obj.id = id++;
+        obj.typeId = typeId++;
+      }
+    }
+    return data;
+  }
+
 const read = (directory) => {
     fileReader.open(directory);
     const headers = readHeaders();
@@ -100,7 +112,7 @@ const read = (directory) => {
 }
 
 const write = (directory, data) => {
-    const { headers, items, creatures, distants, effects } = data;
+    const { headers, items, creatures, distants, effects } = recalculate(data);
     fileReader.open(directory, 'w');
     writeHeaders(headers, { items, creatures, distants, effects });
     writeObjects({items, creatures, distants, effects});
@@ -108,4 +120,4 @@ const write = (directory, data) => {
 
 }
 
-module.exports = { read, write };
+module.exports = { read, write, recalculate };

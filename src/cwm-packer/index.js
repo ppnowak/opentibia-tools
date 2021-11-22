@@ -33,10 +33,7 @@ const readFileHeaders = (spritesQuantity) => {
 }
 
 const writeFileHeaders = (files) => {
-    let dataStart = 7 + files.map(({name}) => {
-        const headerLength = 4 + 4 + 2 + name.length;
-        return headerLength;
-    }).reduce((previous, current) => previous + current, 0);
+    let dataStart = 0;
     for (const { name, data} of files) {
         fileReader.writeNumber(dataStart, 4);
         fileReader.writeNumber(data.length, 4);
