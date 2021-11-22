@@ -6,7 +6,10 @@
   "scripts": {
     "unpack-dat": "node index.js --mode=unpack-dat",
     "pack-dat": "node index.js --mode=pack-dat",
-    "unpack-spr": "node index.js --mode=unpack-spr"
+    "unpack-spr": "node index.js --mode=unpack-spr",
+    "convert-to-png": "node index.js --mode=convert-to-png",
+    "unpack-cwm": "node index.js --mode=unpack-cwm",
+    "pack-cwm": "node index.js --mode=pack-cwm"
   },
   "author": "czarnowidz",
   "license": "ISC",

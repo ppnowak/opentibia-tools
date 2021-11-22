@@ -1,14 +1,14 @@
-const fileReader = require("../utils");
-const Jimp = require("jimp");
+const fileReader = require("../commons/file-utils");
+const imageUtils = require("../commons/image-utils");
 
-const readHeaders = (fileReader) => {
+const readHeaders = () => {
     const hdra = fileReader.readNumber(2);
     const hdrb = fileReader.readNumber(2);
     const spritesQuantity = fileReader.readNumber(2);
     return {hdra, hdrb, spritesQuantity};
 }
 
-const readSprite = (fileReader, position) => {
+const readSprite = (position) => {
     fileReader.setPosition(position);
     let wsk=0, transp=0, pixels=0;
 
@@ -47,29 +47,17 @@ const readSprite = (fileReader, position) => {
 }
 
 const saveSprite = async (id, pixels, sprDirectory) => {
-    const image = new Jimp(32, 32, '#000000ff');
-    image.scan(0, 0, 32, 32, (x, y, idx) => {
-        const [ red, blue, green, opacity ] = pixels[y][x];
-        image.bitmap.data[idx] = red;
-        image.bitmap.data[idx + 1] = blue;
-        image.bitmap.data[idx + 2] = green;
-        image.bitmap.data[idx + 3] = opacity;
-    })
-    await new Promise((resolve, reject) => image.write(`${sprDirectory}/${id}.bmp`, (error, image) => {
-        if (error) {
-            reject(error);
-        }
-        resolve(image);
-    }));
+    const image = imageUtils.createFromPixels(pixels);
+    await imageUtils.save(image, `${sprDirectory}/${id}.bmp`)
 }
 
-const extractSprites = async (fileReader, sprDirectory, spritesQuantity) => {
+const extractSprites = async (sprDirectory, spritesQuantity) => {
     for (let id=1; id<spritesQuantity; id++) {
         const position = 2 + id * 4;
         fileReader.setPosition(position);
         const handler = fileReader.readNumber(4);
         if (handler !== 0) {
-            const pixels = readSprite(fileReader, handler);
+            const pixels = readSprite(handler);
             await saveSprite(id, pixels, sprDirectory);
         }
 
@@ -82,9 +70,10 @@ const extractSprites = async (fileReader, sprDirectory, spritesQuantity) => {
 
 const extract = async (sprFile, sprDirectory) => {
     fileReader.open(sprFile);
-    const { hdra, hdrb, spritesQuantity } = readHeaders(fileReader);
+    const { hdra, hdrb, spritesQuantity } = readHeaders();
     console.log({hdra, hdrb, spritesQuantity});
-    await extractSprites(fileReader, sprDirectory, spritesQuantity);   
+    fileReader.createDir(sprDirectory);
+    await extractSprites(sprDirectory, spritesQuantity);   
     fileReader.close();
 }
 

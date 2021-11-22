@@ -1,6 +1,7 @@
 const ITEM_PROPERTIES = require('./item-properties');
+const fileReader = require("../commons/file-utils");
 
-const readHeaders = (fileReader) => {
+const readHeaders = () => {
     const signature = fileReader.readNumber(4);
     const items = fileReader.readNumber(2);
     const creatures = fileReader.readNumber(2);
@@ -9,7 +10,7 @@ const readHeaders = (fileReader) => {
     return { signature, items, creatures, effects, distants };
 }
 
-const writeHeaders = (fileReader, headers) => {
+const writeHeaders = (headers) => {
     const { signature, items, creatures, effects, distants } = headers;
     fileReader.writeNumber(signature, 4);
     fileReader.writeNumber(items, 2);
@@ -36,7 +37,7 @@ const getItemTypeProperties = (id, {items, creatures, effects}) => {
     return { id, type, typeId };
 }
 
-const readItems = (fileReader, headers) => {
+const readItems = (headers) => {
     let itemId = 100;
     const items = [];
     let properties = [];
@@ -57,7 +58,7 @@ const readItems = (fileReader, headers) => {
     return items;
 }
 
-const writeItemProperty = (fileReader, itemProperty) => {
+const writeItemProperty = (itemProperty) => {
     const { id, data } = itemProperty;
     fileReader.writeNumber(id);
     if (data && data.length > 0) {
@@ -65,7 +66,7 @@ const writeItemProperty = (fileReader, itemProperty) => {
     }
 };
 
-const writeItems = (fileReader, items) => {
+const writeItems = (items) => {
     for (const item of items) {
         for (let id=0; id<256; id++) {
             const prop = ITEM_PROPERTIES.find(p => p.id === id);
@@ -86,20 +87,18 @@ const writeItems = (fileReader, items) => {
 }
 
 const read = (directory) => {
-    const fileReader = require("../utils");
     fileReader.open(directory);
-    const headers = readHeaders(fileReader);
-    const items = readItems(fileReader, headers);
+    const headers = readHeaders();
+    const items = readItems(headers);
     fileReader.close();
     return { headers, items };
 }
 
 const write = (directory, data) => {
     const { headers, items } = data;
-    const fileReader = require("../utils");
     fileReader.open(directory, 'w');
-    writeHeaders(fileReader, headers);
-    writeItems(fileReader, items);
+    writeHeaders(headers);
+    writeItems(items);
     fileReader.close();
 
 }
