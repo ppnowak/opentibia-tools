@@ -10,13 +10,13 @@ const readHeaders = () => {
     return { signature, items, creatures, effects, distants };
 }
 
-const writeHeaders = (headers) => {
-    const { signature, items, creatures, effects, distants } = headers;
+const writeHeaders = ({ signature }, data) => {
+    const { items, creatures, effects, distants } = data;
     fileReader.writeNumber(signature, 4);
-    fileReader.writeNumber(items, 2);
-    fileReader.writeNumber(creatures, 2);
-    fileReader.writeNumber(effects, 2);
-    fileReader.writeNumber(distants, 2);
+    fileReader.writeNumber(99 + items.length, 2);
+    fileReader.writeNumber(creatures.length, 2);
+    fileReader.writeNumber(effects.length, 2);
+    fileReader.writeNumber(distants.length, 2);
 }
 
 const getItemTypeProperties = (id, {items, creatures, effects}) => {
@@ -25,21 +25,26 @@ const getItemTypeProperties = (id, {items, creatures, effects}) => {
         type = "distants";
         typeId = id - items - creatures - effects;
     } else if (id > items + creatures) {
-        type = "effect";
+        type = "effects";
         typeId = id - items - creatures;
     } else if (id > items) {
-        type = "creature";
+        type = "creatures";
         typeId = id - items;
     } else {
-        type = "item";
+        type = "items";
         typeId = id;
     }
     return { id, type, typeId };
 }
 
-const readItems = (headers) => {
+const readObjects = (headers) => {
     let itemId = 100;
-    const items = [];
+    const results = {
+        items: [],
+        creatures: [],
+        effects: [],
+        distants: [],
+    }
     let properties = [];
 
     while(fileReader.hasMore()) {
@@ -48,14 +53,13 @@ const readItems = (headers) => {
         const data = reader ? reader(fileReader) : undefined;
         if (propertyId === 255) { // magic number
             const { id, type, typeId } = getItemTypeProperties(itemId++, headers);
-            items.push({...data, properties, id, type, typeId});
+            results[type].push({...data, properties, id, type, typeId});
             properties = [];
         } else {
             properties.push({name, data});
         }
     }
-
-    return items;
+    return results;
 }
 
 const writeItemProperty = (itemProperty) => {
@@ -66,19 +70,20 @@ const writeItemProperty = (itemProperty) => {
     }
 };
 
-const writeItems = (items) => {
-    for (const item of items) {
+const writeObjects = ({items, creatures, distants, effects}) => {   
+    const objects = [ ...items, ...creatures, ...distants, ...effects ];
+    for (const object of objects) {
         for (let id=0; id<256; id++) {
             const prop = ITEM_PROPERTIES.find(p => p.id === id);
             if (prop) {
                 const { name } = prop;
                 if (id === 255) { // magic number
                     fileReader.writeNumber(id);
-                    prop.writer(fileReader, item);
+                    prop.writer(fileReader, object);
                 } else {
-                    const itemProperty = item.properties.find(p => p.name === name);
+                    const itemProperty = object.properties.find(p => p.name === name);
                     if (itemProperty) {
-                        writeItemProperty(fileReader, {id, ...itemProperty});
+                        writeItemProperty({id, ...itemProperty});
                     }
                 }
             }
@@ -89,16 +94,16 @@ const writeItems = (items) => {
 const read = (directory) => {
     fileReader.open(directory);
     const headers = readHeaders();
-    const items = readItems(headers);
+    const objects = readObjects(headers);
     fileReader.close();
-    return { headers, items };
+    return { headers, ...objects };
 }
 
 const write = (directory, data) => {
-    const { headers, items } = data;
+    const { headers, items, creatures, distants, effects } = data;
     fileReader.open(directory, 'w');
-    writeHeaders(headers);
-    writeItems(items);
+    writeHeaders(headers, { items, creatures, distants, effects });
+    writeObjects({items, creatures, distants, effects});
     fileReader.close();
 
 }
