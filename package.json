@@ -9,12 +9,14 @@
     "unpack-spr": "node index.js --mode=unpack-spr",
     "convert-to-png": "node index.js --mode=convert-to-png",
     "unpack-cwm": "node index.js --mode=unpack-cwm",
-    "pack-cwm": "node index.js --mode=pack-cwm"
+    "pack-cwm": "node index.js --mode=pack-cwm",
+    "e2e": "node end-to-end.js"
   },
   "author": "czarnowidz",
   "license": "ISC",
   "dependencies": {
     "async": "^3.2.2",
+    "dotenv": "^10.0.0",
     "jimp": "^0.16.1",
     "replace-color": "^2.3.0",
     "yargs": "^17.2.1"
