@@ -67,7 +67,6 @@ const extractSprites = async (sprDirectory, spritesQuantity) => {
     }
 }
 
-
 const extract = async (sprFile, sprDirectory) => {
     fileReader.open(sprFile);
     const { hdra, hdrb, spritesQuantity } = readHeaders();

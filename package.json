@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "unpack-dat": "node index.js --mode=unpack-dat",
+    "unpack-dat-compressed": "node index.js --mode=unpack-dat-compressed",
     "pack-dat": "node index.js --mode=pack-dat",
     "unpack-spr": "node index.js --mode=unpack-spr",
     "convert-to-png": "node index.js --mode=convert-to-png",

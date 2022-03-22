@@ -24,4 +24,16 @@ const getArguments = () => yargs(hideBin(process.argv)).argv;
 
 const log = (msg) => console.log(`[${new Date().toISOString()}] ${msg}`);
 
-module.exports = { bufferToNumber, numberToBuffer, getArguments, log };
+const readEnvArray = (name) => {
+    const items = [];
+    let position = 0;
+    const getValue = position => process.env[`${name}_${position}`];
+    while (getValue(position)) {
+        const directory = getValue(position);
+        const id = ++position;
+        items.push({directory, id});
+    }
+    return items;
+}
+
+module.exports = { bufferToNumber, numberToBuffer, getArguments, log, readEnvArray };

@@ -11,11 +11,18 @@ log(`Starting program ${argv.mode}`);
 (async() => {
     switch (argv.mode) {
         
-        // npm run unpack-dat ./binary/Tibia.dat ./binary/Tibia.json
+        // npm run unpack-dat ./binary/Tibia.dat ./binary/json
         case 'unpack-dat': {
+            const [ datFile, jsonDir ] = argv._;
+            TibiaDatLoader.unpackToDirectory(datFile, jsonDir);
+            log(`File ${datFile} was unpacked into ${jsonDir}`);
+            break;
+        }
+        
+        // npm run unpack-dat-compressed ./binary/Tibia.dat ./binary/Tibia.json
+        case 'unpack-dat-compressed': {
             const [ datFile, jsonFile ] = argv._;
-            const data = TibiaDatLoader.read(datFile);
-            fs.writeFileSync(jsonFile, JSON.stringify(data, null, 2));
+            TibiaDatLoader.unpackToJSON(datFile, jsonFile);
             log(`File ${datFile} was unpacked into ${jsonFile}`);
             break;
         }

@@ -3,22 +3,22 @@ const imageConverter = require('./src/image-converter');
 const tibiaDatLoader = require('./src/dat-loader');
 const tibiaCwmPacker = require('./src/cwm-packer');
 const tibiaSprUnpacker = require('./src/spr-unpacker');
-const { log } = require("./src/commons/utils");
+const { log, readEnvArray } = require("./src/commons/utils");
 const dotenv = require('dotenv');
 
 dotenv.config();
 
-const outfits = [];
-let position = 0;
-while (process.env[`OUTFITS_${position}`]) {
-  const directory = process.env[`OUTFITS_${position}`];
-  const outfitId = ++position;
-  outfits.push({directory, outfitId});
-}
+const outfits = readEnvArray('OUTFITS').map(({id, directory}) => {
+  return {outfitId: id, directory};
+});
+
+const flokiItems = readEnvArray('ITEMS');
+const ITEMS_OFFSET = 99;
 
 const { PROCESSED_IMAGES_DIR, BINARIES_PUBLISH_DIR, ORIGINAL_TIBIA_DAT_DIR, ORIGINAL_TIBIA_SPR_DIR, UNPACKED_SPR_DIR } = process.env;
-const NEW_IMAGE_START_ID = parseInt(process.env.NEW_IMAGE_START_ID);
+let NEW_IMAGE_START_ID = parseInt(process.env.NEW_IMAGE_START_ID);
 const NEW_LOOKTYPE_START_ID = parseInt(process.env.NEW_LOOKTYPE_START_ID);
+const NEW_ITEM_START_ID = parseInt(process.env.NEW_ITEM_START_ID) - ITEMS_OFFSET;
 const SPRITE_SIZE = parseInt(process.env.SPRITE_SIZE);
 const UNPACK_SPR = process.env.UNPACK_SPR === "true";
 const SINGLE_OUTFIT_SPRITES = 12;
@@ -55,7 +55,7 @@ const OUTFIT_TEMPLATE = {
 }
 
 const createOutfitDefinition = (id) => {
-  const firstSprite = calculateSpriteId(id);
+  const firstSprite = calculateOutfitSpriteId(id);
   const sprites = [];
   for (let i=0; i<SINGLE_OUTFIT_SPRITES; i++) {
     sprites.push(firstSprite + i);
@@ -63,18 +63,18 @@ const createOutfitDefinition = (id) => {
   return { ...OUTFIT_TEMPLATE, sprites }
 }
 
-const calculateSpriteId = (outfitId, imageId) => {
+const calculateOutfitSpriteId = (outfitId, imageId) => {
   const { to } = imageNamesMappings.find(({from}) => from === imageId) || { to: 1};
   return NEW_IMAGE_START_ID + (outfitId - 1) * SINGLE_OUTFIT_SPRITES + to;
 }
 
-const loadMetaData = ({ outfitId, directory }) => fileReader.getFilesFromDir(directory)
+const loadOutfitMetaData = ({ outfitId, directory }) => fileReader.getFilesFromDir(directory)
 .filter(f => f.toLowerCase().endsWith("png"))
 .map(fileName => {
   const tmp = fileName.split(".");
   const id = parseInt(tmp[0]);
   return {
-    spriteId: calculateSpriteId(outfitId, id),
+    spriteId: calculateOutfitSpriteId(outfitId, id),
     id,
     outfitId,
     directory,
@@ -86,6 +86,49 @@ const normalizeImage = async ({ spriteId, directory, fileName }) => {
   const sourceFile = `${directory}/${fileName}`;
   const destinationFile = `${PROCESSED_IMAGES_DIR}/${spriteId}.png`
   await imageConverter.convertFile(sourceFile, destinationFile, { size: SPRITE_SIZE });
+  return spriteId;
+}
+
+const addItems = async (data) => {
+  const lastItem = data.items.pop();
+  const { items } = data;
+  while (items.length < NEW_ITEM_START_ID) {
+    items.push(items[items.length-1]);
+  }
+
+  for (const { directory } of flokiItems) {
+    const definition = require(`${directory}/item.json`);
+    const sprites = [];
+    for (const sprite of definition.sprites) {
+      const spriteId = ++NEW_IMAGE_START_ID;
+      const id = await normalizeImage({ spriteId, directory, fileName: `${sprite}.bmp` });
+      sprites.push(id);
+    }
+    definition.sprites = sprites;
+    items.push(definition);
+  }
+
+  items.push(lastItem);
+  data.items = items;
+}
+
+const addOutfits = async (data) => {
+  const lastCreature = data.creatures.pop();
+  const { creatures } = data;
+  while (creatures.length < NEW_LOOKTYPE_START_ID) {
+    creatures.push(creatures[creatures.length-1]);
+  }
+  
+  fileReader.createDir(PROCESSED_IMAGES_DIR);
+  for (const outfit of outfits) {
+    const images = loadOutfitMetaData(outfit);
+    for (const image of images) {
+      await normalizeImage(image);
+    }
+    creatures.push(createOutfitDefinition(outfit.outfitId));
+  }
+  creatures.push(lastCreature);
+  data.creatures = creatures;
 }
 
 (async() => {
@@ -104,24 +147,13 @@ const normalizeImage = async ({ spriteId, directory, fileName }) => {
   const data = tibiaDatLoader.read(ORIGINAL_TIBIA_DAT_DIR);
   log(`Original tibia.dat loaded`)
 
+  log(`Adding new items`)
+  await addItems(data);
+  tibiaDatLoader.recalculate(data);
+  log(`Added new items to tibia.dat`)
   
   log(`Adding new outfits`)
-  const lastCreature = data.creatures.pop();
-  const { creatures } = data;
-  while (creatures.length < NEW_LOOKTYPE_START_ID) {
-    creatures.push(creatures[creatures.length-1]);
-  }
-  
-  fileReader.createDir(PROCESSED_IMAGES_DIR);
-  for (const outfit of outfits) {
-    const images = loadMetaData(outfit);
-    for (const image of images) {
-      await normalizeImage(image);
-    }
-    creatures.push(createOutfitDefinition(outfit.outfitId));
-  }
-  creatures.push(lastCreature);
-  data.creatures = creatures;
+  await addOutfits(data);
   tibiaDatLoader.recalculate(data);
   log(`Added new outfits to tibia.dat`)
   

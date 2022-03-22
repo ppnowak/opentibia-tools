@@ -1,5 +1,6 @@
 const ITEM_PROPERTIES = require('./item-properties');
 const fileReader = require("../commons/file-utils");
+const fs = require('fs');
 
 const readHeaders = () => {
     const signature = fileReader.readNumber(4);
@@ -71,7 +72,7 @@ const writeItemProperty = (itemProperty) => {
 };
 
 const writeObjects = ({items, creatures, distants, effects}) => {   
-    const objects = [ ...items, ...creatures, ...distants, ...effects ];
+    const objects = [ ...items, ...creatures, ...effects, ...distants ];
     for (const object of objects) {
         for (let id=0; id<256; id++) {
             const prop = ITEM_PROPERTIES.find(p => p.id === id);
@@ -111,6 +112,25 @@ const read = (directory) => {
     return { headers, ...objects };
 }
 
+const unpackToJSON = (datFile, file) => {
+    const data = read(datFile);
+    fs.writeFileSync(file, JSON.stringify(data, null, 2));
+}
+
+const unpackToDirectory = (datFile, directory) => {
+    const data = read(datFile);
+    fileReader.createDir(`${directory}`);
+    fs.writeFileSync(`${directory}/headers.json`, JSON.stringify(data.headers, null, 2));
+    for (const category of Object.keys(data)) {
+        fileReader.createDir(`${directory}/${category}`);
+        if (category !== 'headers') {
+            for (const item of data[category]) {
+                fs.writeFileSync(`${directory}/${category}/${item.typeId}.json`, JSON.stringify(item, null, 2));
+            }
+        }
+    }
+}
+
 const write = (directory, data) => {
     const { headers, items, creatures, distants, effects } = recalculate(data);
     fileReader.open(directory, 'w');
@@ -120,4 +140,4 @@ const write = (directory, data) => {
 
 }
 
-module.exports = { read, write, recalculate };
+module.exports = { read, write, recalculate, unpackToJSON, unpackToDirectory };
