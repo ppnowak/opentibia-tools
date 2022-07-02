@@ -13,11 +13,12 @@ const logProgress = (remaining, logLatency) => {
 }
 
 const createQueue = params => {
-    const { concurrency, logLatency } = { ...DEFAULTS, ...(params || {})};
+    const { concurrency, logLatency, log = true } = { ...DEFAULTS, ...(params || {})};
     let queue;
     queue = async.queue((task, completed) => {
-        task().then(() => completed(null, () => logProgress(queue.length(), logLatency)));
+        task().then(() => completed(null, () => log ? logProgress(queue.length(), logLatency) : {}));
     }, concurrency);
+    queue.log = log;
     return queue;
 }
   
@@ -27,11 +28,19 @@ const addTask = (queue, task) => {
     })
 }
 
-const waitForEnd = async queue => {
+const waitForEnd = async (queue) => {
     await new Promise((resolve) => queue.drain(() => {
-        console.log('Successfully processed all items');
+        if (queue.log) {
+            log('Successfully processed all items');
+        }
         resolve();
     }));
 };
 
-module.exports = { createQueue, addTask, waitForEnd };
+const waitIf = async (queue, { length }) => {
+    if (queue.length() > length) {
+        await waitForEnd(queue, { log: false });
+    }
+}
+
+module.exports = { createQueue, addTask, waitForEnd, waitIf };

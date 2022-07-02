@@ -1,5 +1,6 @@
 const fileReader = require("../commons/file-utils");
 const imageUtils = require("../commons/image-utils");
+const asyncQueue = require("../commons/async-queue");
 
 const readHeaders = () => {
     const hdra = fileReader.readNumber(2);
@@ -52,25 +53,25 @@ const saveSprite = async (id, pixels, sprDirectory) => {
 }
 
 const extractSprites = async (sprDirectory, spritesQuantity) => {
+    const queue = asyncQueue.createQueue({ log: false });
     for (let id=1; id<spritesQuantity; id++) {
         const position = 2 + id * 4;
         fileReader.setPosition(position);
         const handler = fileReader.readNumber(4);
         if (handler !== 0) {
             const pixels = readSprite(handler);
-            await saveSprite(id, pixels, sprDirectory);
+            const job = async () => await saveSprite(id, pixels, sprDirectory);
+            asyncQueue.addTask(queue, job);
         }
-
-        if (id % 1000 === 0) {
-            console.log(`Processed ${id}/${spritesQuantity}`)
-        }
+        await asyncQueue.waitIf(queue, { length: 1000 });
     }
+    await asyncQueue.waitForEnd(queue);
 }
 
 const extract = async (sprFile, sprDirectory) => {
     fileReader.open(sprFile);
     const { hdra, hdrb, spritesQuantity } = readHeaders();
-    console.log({hdra, hdrb, spritesQuantity});
+    console.log(`hdra: ${hdra}, hdrb: ${hdrb}, sprites: ${spritesQuantity}`);
     fileReader.createDir(sprDirectory);
     await extractSprites(sprDirectory, spritesQuantity);   
     fileReader.close();

@@ -10,6 +10,8 @@ const createDir = (dir) => {
     }
 }
 
+const copyFile = (source, dest) => fs.copyFileSync(source, dest);
+
 const getFilesFromDir = (dir) => fs.readdirSync(dir, (err, files) => files);
 
 const open = (dir, mode = 'r') => {
@@ -73,4 +75,4 @@ const writeByteNumbers = array => {
     }
 }
 
-module.exports = { debug, getCursor, createDir, getFilesFromDir, open, readBytes, readNumber, readText, writeBytes, writeNumber, writeText, readByteNumbers, writeByteNumbers, hasMore, close, setPosition };
+module.exports = { debug, copyFile, getCursor, createDir, getFilesFromDir, open, readBytes, readNumber, readText, writeBytes, writeNumber, writeText, readByteNumbers, writeByteNumbers, hasMore, close, setPosition };

@@ -68,14 +68,14 @@ const extract = (cwmFile, pngDirectory) => {
 
 }
 
-const compress = (pngDirectory, cwmFile) => {
+const compress = (pngDirectory, cwmFile, spriteSize) => {
     fileReader.open(cwmFile, 'w');
     const files = [];
     for (const name of fileReader.getFilesFromDir(pngDirectory)) {
         const data = fs.readFileSync(`${pngDirectory}/${name}`)
         files.push({ name, data });
     }
-    writeHeaders({ spritesQuantity: files.length });
+    writeHeaders({ spritesQuantity: files.length, size: spriteSize });
     writeFiles(files);
     fileReader.close();
 }

@@ -12,7 +12,9 @@ const DEFAULTS = {
 const convertFile = async (source, destination, params) => {
     const { colorFrom, colorTo, size } = { ...DEFAULTS, ...(params || {})};
     const img = await imageUtils.readImage(source);
-    imageUtils.overrideColor(img, colorFrom, colorTo);
+    if (colorFrom && colorTo) {
+        imageUtils.overrideColor(img, colorFrom, colorTo);
+    }
     imageUtils.resize(img, size);
     await imageUtils.save(img, destination);
 }

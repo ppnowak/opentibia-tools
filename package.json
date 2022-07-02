@@ -11,6 +11,7 @@
     "convert-to-png": "node index.js --mode=convert-to-png",
     "unpack-cwm": "node index.js --mode=unpack-cwm",
     "pack-cwm": "node index.js --mode=pack-cwm",
+    "override-sprites": "node index.js --mode=override-sprites",
     "e2e": "node end-to-end.js"
   },
   "author": "czarnowidz",

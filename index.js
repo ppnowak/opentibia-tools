@@ -4,6 +4,7 @@ const TibiaSprUnpacker = require('./src/spr-unpacker');
 const TibiaCwmPacker = require('./src/cwm-packer');
 const ImageConverter = require('./src/image-converter');
 const { getArguments, log } = require('./src/commons/utils');
+const { getFilesFromDir, createDir, copyFile } = require('./src/commons/file-utils');
 
 const argv = getArguments();
 log(`Starting program ${argv.mode}`);
@@ -63,9 +64,21 @@ log(`Starting program ${argv.mode}`);
 
         // npm run pack-cwm ./sprites/png64 ./binary/Tibia.cwm
         case 'pack-cwm': {
-            const [ pngDirectory, cwmFile ] = argv._;
-            TibiaCwmPacker.compress(pngDirectory, cwmFile);
+            const [ pngDirectory, cwmFile, spriteSize ] = argv._;
+            TibiaCwmPacker.compress(pngDirectory, cwmFile, spriteSize);
             log(`Directory ${pngDirectory} was packed to ${cwmFile}`);
+            break;
+        }
+
+        // npm run override-sprites ./sprites/tibia ./sprites/tibia_1 ./sprites/blank.bmp
+        case 'override-sprites': {
+            const [ bmpDir, newBmpDir, singleBmpDir ] = argv._;
+            createDir(newBmpDir);
+            for (const fileName of getFilesFromDir(bmpDir)) {
+                const fileDir = `${newBmpDir}/${fileName}`;
+                copyFile(singleBmpDir, fileDir);
+            }
+            log("Done");
             break;
         }
         

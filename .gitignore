@@ -6,6 +6,8 @@ node_modules
 *.png
 *.psb
 *.gif
+*.jpg
+*.psd
 *.bmp
 *.7z
 .env
