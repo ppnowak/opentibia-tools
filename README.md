@@ -2,6 +2,19 @@
 * installed nodejs
 * command `npm install` executed after extracting this repo
 
+# Version Support
+
+This tool now supports automatic detection and handling of multiple Tibia client versions:
+
+**Supported Versions:** 7.10 through 10.97 (80+ different client versions)
+
+The tool automatically:
+- Detects the client version from DAT/SPR file signatures
+- Uses version-specific item properties and flags
+- Handles format differences between versions transparently
+
+When extracting or packing DAT/SPR files, the version is automatically detected and logged.
+
 # Tibia.dat editor
 
 ## Extracting

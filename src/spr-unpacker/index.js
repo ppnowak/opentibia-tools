@@ -1,11 +1,24 @@
 const fileReader = require("../commons/file-utils");
 const imageUtils = require("../commons/image-utils");
+const { getVersionBySprSignature } = require('../commons/tibia-versions');
 
 const readHeaders = () => {
+    // Read signature (4 bytes) - hdra and hdrb are actually the signature split into 2 parts
     const hdra = fileReader.readNumber(2);
     const hdrb = fileReader.readNumber(2);
+
+    // Combine into full signature (little-endian)
+    const signature = hdra | (hdrb << 16);
+
     const spritesQuantity = fileReader.readNumber(2);
-    return {hdra, hdrb, spritesQuantity};
+
+    // Detect version from signature
+    const versionInfo = getVersionBySprSignature(signature);
+    const version = versionInfo ? versionInfo.version : 'unknown';
+
+    console.log(`Detected Tibia SPR version: ${version} (signature: 0x${signature.toString(16).toUpperCase()})`);
+
+    return { hdra, hdrb, signature, spritesQuantity, version, versionInfo };
 }
 
 const readSprite = (position) => {
@@ -70,11 +83,18 @@ const extractSprites = async (sprDirectory, spritesQuantity) => {
 
 const extract = async (sprFile, sprDirectory) => {
     fileReader.open(sprFile);
-    const { hdra, hdrb, spritesQuantity } = readHeaders();
-    console.log({hdra, hdrb, spritesQuantity});
+    const { hdra, hdrb, signature, spritesQuantity, version, versionInfo } = readHeaders();
+    console.log({
+        version,
+        signature: `0x${signature.toString(16).toUpperCase()}`,
+        hdra,
+        hdrb,
+        spritesQuantity
+    });
     fileReader.createDir(sprDirectory);
-    await extractSprites(sprDirectory, spritesQuantity);   
+    await extractSprites(sprDirectory, spritesQuantity);
     fileReader.close();
+    console.log(`Extraction complete. Extracted ${spritesQuantity} sprites from Tibia ${version}`);
 }
 
 module.exports = { extract };

@@ -1,4 +1,6 @@
 const ITEM_PROPERTIES = require('./item-properties');
+const { getPropertiesForVersion, getDefaultProperties } = require('./item-properties-versioned');
+const { getVersionByDatSignature } = require('../commons/tibia-versions');
 const fileReader = require("../commons/file-utils");
 
 const readHeaders = () => {
@@ -7,7 +9,14 @@ const readHeaders = () => {
     const creatures = fileReader.readNumber(2);
     const effects = fileReader.readNumber(2);
     const distants = fileReader.readNumber(2);
-    return { signature, items, creatures, effects, distants };
+
+    // Detect version from signature
+    const versionInfo = getVersionByDatSignature(signature);
+    const version = versionInfo ? versionInfo.version : 'unknown';
+
+    console.log(`Detected Tibia version: ${version} (signature: 0x${signature.toString(16).toUpperCase()})`);
+
+    return { signature, items, creatures, effects, distants, version, versionInfo };
 }
 
 const writeHeaders = ({ signature }, data) => {
@@ -47,9 +56,22 @@ const readObjects = (headers) => {
     }
     let properties = [];
 
+    // Get version-specific properties or fall back to default
+    const versionedProperties = headers.version && headers.version !== 'unknown'
+        ? getPropertiesForVersion(headers.version)
+        : ITEM_PROPERTIES;
+
     while(fileReader.hasMore()) {
         const propertyId = fileReader.readNumber();
-        const { name, reader } = ITEM_PROPERTIES.find(({id}) => id === propertyId);
+        const property = versionedProperties.find(({id}) => id === propertyId);
+
+        if (!property) {
+            console.warn(`Unknown property ID: 0x${propertyId.toString(16).toUpperCase()} at item ${itemId}`);
+            // Skip this property and continue
+            continue;
+        }
+
+        const { name, reader } = property;
         const data = reader ? reader(fileReader) : undefined;
         if (propertyId === 255) { // magic number
             const { id, type, typeId } = getItemTypeProperties(itemId++, headers);
@@ -70,11 +92,16 @@ const writeItemProperty = (itemProperty) => {
     }
 };
 
-const writeObjects = ({items, creatures, distants, effects}) => {   
+const writeObjects = ({items, creatures, distants, effects}, headers) => {
+    // Get version-specific properties or fall back to default
+    const versionedProperties = headers && headers.version && headers.version !== 'unknown'
+        ? getPropertiesForVersion(headers.version)
+        : ITEM_PROPERTIES;
+
     const objects = [ ...items, ...creatures, ...distants, ...effects ];
     for (const object of objects) {
         for (let id=0; id<256; id++) {
-            const prop = ITEM_PROPERTIES.find(p => p.id === id);
+            const prop = versionedProperties.find(p => p.id === id);
             if (prop) {
                 const { name } = prop;
                 if (id === 255) { // magic number
@@ -115,7 +142,7 @@ const write = (directory, data) => {
     const { headers, items, creatures, distants, effects } = recalculate(data);
     fileReader.open(directory, 'w');
     writeHeaders(headers, { items, creatures, distants, effects });
-    writeObjects({items, creatures, distants, effects});
+    writeObjects({items, creatures, distants, effects}, headers);
     fileReader.close();
 
 }
