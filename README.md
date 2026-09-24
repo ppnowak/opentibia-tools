@@ -38,18 +38,27 @@ Requires Node.js 18+ (the CLI runs TypeScript through `tsx`, no build step).
 
 ## Web app (PWA)
 
+Live version: **<https://ppnowak.github.io/opentibia-tools/>** (installable, works offline).
+
 ```
 npm run dev       # development server
 npm run build     # production build in ./dist (static files, deploy anywhere)
 npm run preview   # serve the production build
 ```
 
-The CI workflow can deploy `dist` to GitHub Pages (Actions → CI → Run workflow → "Deploy the PWA").
+Every push to `main` builds the app and publishes it to the `gh-pages` branch
+(`.github/workflows/pages.yml`; repository Settings → Pages → "Deploy from a branch" → `gh-pages`).
 
 Features:
 
 - **Open** `Tibia.dat` + `Tibia.spr` (+ optional `Tibia.cwm`) by drag & drop, file picker, or "Open with…" once
   installed. Auto-detects the version or lets you pick it (with layout overrides). dat-only and spr-only work too.
+- **Preload a data pack**: pick any of the 100 packs published at downloads.ots.me and click *Preload*. The
+  pack is downloaded by your own browser straight from downloads.ots.me to your computer and extracted locally
+  (a `.zip` can also be dropped/picked anywhere a client is opened). OpenTibia Tools never hosts, mirrors or
+  proxies client files. Because downloads.ots.me does not allow cross-site script access, the zip is saved as a
+  normal browser download and you open it with *Open downloaded …zip*; if the server ever enables CORS, the pack
+  is fetched and opened in one step.
 - **Browse** items, outfits, effects, missiles and sprites in fast virtualized grids (50k+ things, 680k+ sprites).
 - **Preview** with animation (using the file's frame durations), directions/patterns/addons/mounts, layers,
   outfit colorization with the Tibia palette, zoom, backgrounds and high-res CWM sprites.

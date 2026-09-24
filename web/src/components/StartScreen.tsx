@@ -3,7 +3,9 @@ import { Project } from '../../../src/core/project.ts';
 import { ALL_VERSIONS } from '../../../src/core/versions.ts';
 import { classifyFiles, openClient, openJson, type OpenRequest } from '../lib/loader.ts';
 import { filesFromDrop, pickFiles } from '../lib/files.ts';
-import { files, openDialog, project, resetHistory, select, toast, touch } from '../state.ts';
+import { files, openDialog, project, resetHistory, select, toast, touch, withBusy } from '../state.ts';
+import { expandZips } from '../lib/packs.ts';
+import { DataPacks } from './DataPacks.tsx';
 import { VersionPicker, type VersionChoice } from './VersionPicker.tsx';
 import { DAT_FORMATS } from '../../../src/core/dat/flags.ts';
 
@@ -13,7 +15,15 @@ export function StartScreen() {
   const [over, setOver] = useState(false);
   const [newVersion, setNewVersion] = useState<VersionChoice>({ version: 860 });
 
-  const accept = async (list: File[]) => {
+  const accept = async (input: File[], packVersion?: number) => {
+    let list = input;
+    let hint = packVersion;
+    if (input.some((f) => /\.zip$/i.test(f.name))) {
+      const expanded = await withBusy('Extracting zip…', () => expandZips(input));
+      if (!expanded) return;
+      list = expanded.files;
+      hint ??= expanded.version;
+    }
     const req = classifyFiles(list);
     if (!req.dat && !req.spr && req.json) return openJson(req.json);
     if (req.other.length && !req.dat && !req.spr && !req.cwm) {
@@ -22,7 +32,7 @@ export function StartScreen() {
     }
     const next = { ...picked, ...Object.fromEntries(Object.entries(req).filter(([k, v]) => v && k !== 'other')) };
     setPicked(next);
-    if (next.dat && next.spr) await openClient({ ...next, ...choice });
+    if (next.dat && next.spr) await openClient({ ...next, ...(choice.version || !hint ? choice : { version: hint }) });
   };
 
   const onDrop = async (e: DragEvent) => {
@@ -53,10 +63,11 @@ export function StartScreen() {
         >
           <h2>Open a client</h2>
           <p>
-            Drop <code>Tibia.dat</code> + <code>Tibia.spr</code> here (optionally an OTClientV8 <code>Tibia.cwm</code>), or pick them:
+            Drop <code>Tibia.dat</code> + <code>Tibia.spr</code> here (optionally an OTClientV8 <code>Tibia.cwm</code>) or a data pack{' '}
+            <code>.zip</code>, or pick them:
           </p>
           <div class="row">
-            <button class="primary" onClick={async () => accept(await pickFiles('.dat,.spr,.cwm,.json'))}>
+            <button class="primary" onClick={async () => accept(await pickFiles('.dat,.spr,.cwm,.json,.zip'))}>
               Choose files…
             </button>
           </div>
@@ -73,6 +84,8 @@ export function StartScreen() {
             {(picked.dat || picked.spr || picked.cwm) && <button class="ghost" onClick={() => setPicked({})}>Clear</button>}
           </div>
         </section>
+
+        <DataPacks onFiles={(list, version) => accept(list, version)} onZip={(list) => accept(list)} />
 
         <section class="card">
           <h2>Start from scratch</h2>

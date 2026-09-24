@@ -7,6 +7,8 @@ import { thingThumbnail } from '../lib/canvas.ts';
 import { pickFiles } from '../lib/files.ts';
 import { classifyFiles, openClient } from '../lib/loader.ts';
 import { closeDialog, commitAdd, project, select, toast, touch, withBusy } from '../state.ts';
+import { expandZips } from '../lib/packs.ts';
+import { DataPacks } from './DataPacks.tsx';
 import { Modal } from './Dialogs.tsx';
 import { Thumb } from './Thumb.tsx';
 import { VersionPicker, type VersionChoice } from './VersionPicker.tsx';
@@ -24,14 +26,18 @@ export function ImportClientDialog() {
   const [anchor, setAnchor] = useState<number | null>(null);
   const [target, setTarget] = useState<ThingCategory | 'same'>('same');
 
-  const open = async () => {
-    const files = await pickFiles('.dat,.spr,.cwm');
-    const req = classifyFiles(files);
+  const open = async (picked?: File[], packVersion?: number) => {
+    const input = picked ?? (await pickFiles('.dat,.spr,.cwm,.zip'));
+    if (!input.length) return;
+    const expanded = await withBusy('Extracting…', () => expandZips(input));
+    if (!expanded) return;
+    const req = classifyFiles(expanded.files);
     if (!req.dat || !req.spr) {
-      toast('Select both Tibia.dat and Tibia.spr of the source client', 'error');
+      toast('Select both Tibia.dat and Tibia.spr (or a data pack zip) of the source client', 'error');
       return;
     }
-    const sp = await openClient({ ...req, ...choice }, 'source');
+    const hint = packVersion ?? expanded.version;
+    const sp = await openClient({ ...req, ...(choice.version || !hint ? choice : { version: hint }) }, 'source');
     if (sp) {
       source.value = { project: sp, name: `${req.dat.name} (${sp.label})` };
       setPicked(new Set());
@@ -75,11 +81,12 @@ export function ImportClientDialog() {
       </p>
       <div class="row wrap">
         <VersionPicker value={choice} onChange={setChoice} allowAuto label="Source version" />
-        <button class="primary" onClick={open}>
-          {src ? 'Open another source…' : 'Open source client (dat + spr)…'}
+        <button class="primary" onClick={() => open()}>
+          {src ? 'Open another source…' : 'Open source client (dat + spr or zip)…'}
         </button>
         {src && <span class="muted">Source: {src.name}</span>}
       </div>
+      {!src && <DataPacks onFiles={(list, version) => open(list, version)} onZip={(list) => open(list)} />}
       {src && (
         <>
           <nav class="tabs small">

@@ -41,6 +41,7 @@ export default defineConfig({
             accept: {
               'application/octet-stream': ['.dat', '.spr', '.cwm'],
               'application/json': ['.json'],
+              'application/zip': ['.zip'],
             },
           },
         ],

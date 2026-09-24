@@ -3,12 +3,6 @@ name: CI
 on:
   push:
   pull_request:
-  workflow_dispatch:
-    inputs:
-      deploy:
-        description: Deploy the PWA to GitHub Pages
-        type: boolean
-        default: false
 
 permissions:
   contents: read
@@ -26,22 +20,3 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
-      - uses: actions/upload-pages-artifact@v3
-        if: github.event_name == 'workflow_dispatch' && inputs.deploy
-        with:
-          path: dist
-
-  # Manual: Actions > CI > Run workflow > "Deploy the PWA" (requires Pages source = GitHub Actions).
-  deploy:
-    needs: build
-    if: github.event_name == 'workflow_dispatch' && inputs.deploy
-    runs-on: ubuntu-latest
-    permissions:
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@v4

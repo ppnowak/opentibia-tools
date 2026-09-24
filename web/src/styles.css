@@ -274,6 +274,20 @@ table.versions th {
   gap: 6px;
 }
 
+.notice {
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 8px 12px;
+  margin: 10px 0;
+  background: var(--panel-2);
+}
+.notice p {
+  margin: 0 0 4px;
+}
+a {
+  color: var(--accent);
+}
+
 /* ---------- editor ---------- */
 .editor {
   display: flex;
