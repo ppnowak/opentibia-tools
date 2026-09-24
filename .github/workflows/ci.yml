@@ -11,8 +11,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
@@ -25,7 +25,7 @@ jobs:
   action:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Build example client
         uses: ./
         with:
@@ -48,4 +48,7 @@ jobs:
         with:
           args: info out/example-1098 --json
       - name: Check action output
-        run: test "${{ fromJSON(steps.info.outputs.json).version }}" = "10.98"
+        # 10.97 / 10.98 share a signature, so check the converted layout instead of the label
+        run: |
+          test "${{ fromJSON(steps.info.outputs.json).features.frameGroups }}" = "true"
+          test "${{ fromJSON(steps.info.outputs.json).counts.outfit }}" = "1"
