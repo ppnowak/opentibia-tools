@@ -1,0 +1,908 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ppnowak.github.io/opentibia-tools/schemas/build.schema.json",
+  "title": "opentibia-tools build manifest",
+  "description": "Declarative build of Tibia.dat / Tibia.spr / Tibia.cwm (opentibia-tools build <manifest>). Paths are relative to the manifest file.",
+  "type": "object",
+  "required": [
+    "output"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "client": {
+      "type": [
+        "string",
+        "number"
+      ],
+      "description": "Version of the base files (auto-detected when omitted; required without base)."
+    },
+    "features": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "extended": {
+          "type": "boolean"
+        },
+        "transparency": {
+          "type": "boolean"
+        },
+        "enhancedAnimations": {
+          "type": "boolean"
+        },
+        "frameGroups": {
+          "type": "boolean"
+        }
+      }
+    },
+    "base": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Starting point; omit to start from an empty client.",
+      "properties": {
+        "dat": {
+          "type": "string"
+        },
+        "spr": {
+          "type": "string"
+        },
+        "cwm": {
+          "type": "string"
+        },
+        "json": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string"
+        }
+      }
+    },
+    "things": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "*.otthings.json bundles (or directories of them) to append."
+    },
+    "outfits": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "images"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "images": {
+            "type": "string",
+            "description": "Folder of <direction><frame>.png (1=south 2=east 3=west 4=north)."
+          },
+          "looktype": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Replace this looktype, or pad up to it."
+          },
+          "flags": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "ground": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 65535
+              },
+              "groundBorder": {
+                "const": true
+              },
+              "onBottom": {
+                "const": true
+              },
+              "onTop": {
+                "const": true
+              },
+              "container": {
+                "const": true
+              },
+              "stackable": {
+                "const": true
+              },
+              "forceUse": {
+                "const": true
+              },
+              "multiUse": {
+                "const": true
+              },
+              "chargeable": {
+                "const": true
+              },
+              "writable": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 65535
+              },
+              "writableOnce": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 65535
+              },
+              "fluidContainer": {
+                "const": true
+              },
+              "fluid": {
+                "const": true
+              },
+              "unpassable": {
+                "const": true
+              },
+              "unmoveable": {
+                "const": true
+              },
+              "blockMissile": {
+                "const": true
+              },
+              "blockPathfind": {
+                "const": true
+              },
+              "noMoveAnimation": {
+                "const": true
+              },
+              "pickupable": {
+                "const": true
+              },
+              "hangable": {
+                "const": true
+              },
+              "hookSouth": {
+                "const": true
+              },
+              "hookEast": {
+                "const": true
+              },
+              "rotatable": {
+                "const": true
+              },
+              "light": {
+                "type": "object",
+                "required": [
+                  "level",
+                  "color"
+                ],
+                "properties": {
+                  "level": {
+                    "type": "integer"
+                  },
+                  "color": {
+                    "type": "integer"
+                  }
+                },
+                "additionalProperties": false
+              },
+              "dontHide": {
+                "const": true
+              },
+              "translucent": {
+                "const": true
+              },
+              "floorChange": {
+                "const": true
+              },
+              "offset": {
+                "type": "object",
+                "required": [
+                  "x",
+                  "y"
+                ],
+                "properties": {
+                  "x": {
+                    "type": "integer"
+                  },
+                  "y": {
+                    "type": "integer"
+                  }
+                },
+                "additionalProperties": false
+              },
+              "elevation": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 65535
+              },
+              "lyingObject": {
+                "const": true
+              },
+              "animateAlways": {
+                "const": true
+              },
+              "minimap": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 65535
+              },
+              "lensHelp": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 65535
+              },
+              "fullGround": {
+                "const": true
+              },
+              "ignoreLook": {
+                "const": true
+              },
+              "cloth": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 65535
+              },
+              "market": {
+                "type": "object",
+                "required": [
+                  "category",
+                  "tradeAs",
+                  "showAs",
+                  "name",
+                  "restrictVocation",
+                  "requiredLevel"
+                ],
+                "properties": {
+                  "category": {
+                    "type": "integer"
+                  },
+                  "tradeAs": {
+                    "type": "integer"
+                  },
+                  "showAs": {
+                    "type": "integer"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "restrictVocation": {
+                    "type": "integer"
+                  },
+                  "requiredLevel": {
+                    "type": "integer"
+                  }
+                }
+              },
+              "defaultAction": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 65535
+              },
+              "wrappable": {
+                "const": true
+              },
+              "unwrappable": {
+                "const": true
+              },
+              "topEffect": {
+                "const": true
+              },
+              "usable": {
+                "const": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "objects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "images"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "category": {
+            "enum": [
+              "item",
+              "effect",
+              "missile"
+            ]
+          },
+          "images": {
+            "type": "string",
+            "description": "Image file or folder (one image per frame)."
+          },
+          "id": {
+            "type": "integer"
+          },
+          "hires": {
+            "type": "boolean"
+          },
+          "flags": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "ground": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 65535
+              },
+              "groundBorder": {
+                "const": true
+              },
+              "onBottom": {
+                "const": true
+              },
+              "onTop": {
+                "const": true
+              },
+              "container": {
+                "const": true
+              },
+              "stackable": {
+                "const": true
+              },
+              "forceUse": {
+                "const": true
+              },
+              "multiUse": {
+                "const": true
+              },
+              "chargeable": {
+                "const": true
+              },
+              "writable": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 65535
+              },
+              "writableOnce": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 65535
+              },
+              "fluidContainer": {
+                "const": true
+              },
+              "fluid": {
+                "const": true
+              },
+              "unpassable": {
+                "const": true
+              },
+              "unmoveable": {
+                "const": true
+              },
+              "blockMissile": {
+                "const": true
+              },
+              "blockPathfind": {
+                "const": true
+              },
+              "noMoveAnimation": {
+                "const": true
+              },
+              "pickupable": {
+                "const": true
+              },
+              "hangable": {
+                "const": true
+              },
+              "hookSouth": {
+                "const": true
+              },
+              "hookEast": {
+                "const": true
+              },
+              "rotatable": {
+                "const": true
+              },
+              "light": {
+                "type": "object",
+                "required": [
+                  "level",
+                  "color"
+                ],
+                "properties": {
+                  "level": {
+                    "type": "integer"
+                  },
+                  "color": {
+                    "type": "integer"
+                  }
+                },
+                "additionalProperties": false
+              },
+              "dontHide": {
+                "const": true
+              },
+              "translucent": {
+                "const": true
+              },
+              "floorChange": {
+                "const": true
+              },
+              "offset": {
+                "type": "object",
+                "required": [
+                  "x",
+                  "y"
+                ],
+                "properties": {
+                  "x": {
+                    "type": "integer"
+                  },
+                  "y": {
+                    "type": "integer"
+                  }
+                },
+                "additionalProperties": false
+              },
+              "elevation": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 65535
+              },
+              "lyingObject": {
+                "const": true
+              },
+              "animateAlways": {
+                "const": true
+              },
+              "minimap": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 65535
+              },
+              "lensHelp": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 65535
+              },
+              "fullGround": {
+                "const": true
+              },
+              "ignoreLook": {
+                "const": true
+              },
+              "cloth": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 65535
+              },
+              "market": {
+                "type": "object",
+                "required": [
+                  "category",
+                  "tradeAs",
+                  "showAs",
+                  "name",
+                  "restrictVocation",
+                  "requiredLevel"
+                ],
+                "properties": {
+                  "category": {
+                    "type": "integer"
+                  },
+                  "tradeAs": {
+                    "type": "integer"
+                  },
+                  "showAs": {
+                    "type": "integer"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "restrictVocation": {
+                    "type": "integer"
+                  },
+                  "requiredLevel": {
+                    "type": "integer"
+                  }
+                }
+              },
+              "defaultAction": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 65535
+              },
+              "wrappable": {
+                "const": true
+              },
+              "unwrappable": {
+                "const": true
+              },
+              "topEffect": {
+                "const": true
+              },
+              "usable": {
+                "const": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "sprites": {
+      "type": "string",
+      "description": "Folder of <sprite id>.png overrides."
+    },
+    "patches": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "category": {
+            "enum": [
+              "item",
+              "outfit",
+              "effect",
+              "missile"
+            ]
+          },
+          "id": {
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "Id or range \"100-200\"."
+          },
+          "set": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "ground": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 65535
+              },
+              "groundBorder": {
+                "const": true
+              },
+              "onBottom": {
+                "const": true
+              },
+              "onTop": {
+                "const": true
+              },
+              "container": {
+                "const": true
+              },
+              "stackable": {
+                "const": true
+              },
+              "forceUse": {
+                "const": true
+              },
+              "multiUse": {
+                "const": true
+              },
+              "chargeable": {
+                "const": true
+              },
+              "writable": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 65535
+              },
+              "writableOnce": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 65535
+              },
+              "fluidContainer": {
+                "const": true
+              },
+              "fluid": {
+                "const": true
+              },
+              "unpassable": {
+                "const": true
+              },
+              "unmoveable": {
+                "const": true
+              },
+              "blockMissile": {
+                "const": true
+              },
+              "blockPathfind": {
+                "const": true
+              },
+              "noMoveAnimation": {
+                "const": true
+              },
+              "pickupable": {
+                "const": true
+              },
+              "hangable": {
+                "const": true
+              },
+              "hookSouth": {
+                "const": true
+              },
+              "hookEast": {
+                "const": true
+              },
+              "rotatable": {
+                "const": true
+              },
+              "light": {
+                "type": "object",
+                "required": [
+                  "level",
+                  "color"
+                ],
+                "properties": {
+                  "level": {
+                    "type": "integer"
+                  },
+                  "color": {
+                    "type": "integer"
+                  }
+                },
+                "additionalProperties": false
+              },
+              "dontHide": {
+                "const": true
+              },
+              "translucent": {
+                "const": true
+              },
+              "floorChange": {
+                "const": true
+              },
+              "offset": {
+                "type": "object",
+                "required": [
+                  "x",
+                  "y"
+                ],
+                "properties": {
+                  "x": {
+                    "type": "integer"
+                  },
+                  "y": {
+                    "type": "integer"
+                  }
+                },
+                "additionalProperties": false
+              },
+              "elevation": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 65535
+              },
+              "lyingObject": {
+                "const": true
+              },
+              "animateAlways": {
+                "const": true
+              },
+              "minimap": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 65535
+              },
+              "lensHelp": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 65535
+              },
+              "fullGround": {
+                "const": true
+              },
+              "ignoreLook": {
+                "const": true
+              },
+              "cloth": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 65535
+              },
+              "market": {
+                "type": "object",
+                "required": [
+                  "category",
+                  "tradeAs",
+                  "showAs",
+                  "name",
+                  "restrictVocation",
+                  "requiredLevel"
+                ],
+                "properties": {
+                  "category": {
+                    "type": "integer"
+                  },
+                  "tradeAs": {
+                    "type": "integer"
+                  },
+                  "showAs": {
+                    "type": "integer"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "restrictVocation": {
+                    "type": "integer"
+                  },
+                  "requiredLevel": {
+                    "type": "integer"
+                  }
+                }
+              },
+              "defaultAction": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 65535
+              },
+              "wrappable": {
+                "const": true
+              },
+              "unwrappable": {
+                "const": true
+              },
+              "topEffect": {
+                "const": true
+              },
+              "usable": {
+                "const": true
+              }
+            }
+          },
+          "unset": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "ground",
+                "groundBorder",
+                "onBottom",
+                "onTop",
+                "container",
+                "stackable",
+                "forceUse",
+                "multiUse",
+                "chargeable",
+                "writable",
+                "writableOnce",
+                "fluidContainer",
+                "fluid",
+                "unpassable",
+                "unmoveable",
+                "blockMissile",
+                "blockPathfind",
+                "noMoveAnimation",
+                "pickupable",
+                "hangable",
+                "hookSouth",
+                "hookEast",
+                "rotatable",
+                "light",
+                "dontHide",
+                "translucent",
+                "floorChange",
+                "offset",
+                "elevation",
+                "lyingObject",
+                "animateAlways",
+                "minimap",
+                "lensHelp",
+                "fullGround",
+                "ignoreLook",
+                "cloth",
+                "market",
+                "defaultAction",
+                "wrappable",
+                "unwrappable",
+                "topEffect",
+                "usable"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "output": {
+      "type": "object",
+      "required": [
+        "dir"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "dir": {
+          "type": "string"
+        },
+        "client": {
+          "type": [
+            "string",
+            "number"
+          ],
+          "description": "Target version (default: base version)."
+        },
+        "features": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "extended": {
+              "type": "boolean"
+            },
+            "transparency": {
+              "type": "boolean"
+            },
+            "enhancedAnimations": {
+              "type": "boolean"
+            },
+            "frameGroups": {
+              "type": "boolean"
+            }
+          }
+        },
+        "dat": {
+          "type": "string"
+        },
+        "spr": {
+          "type": "string"
+        },
+        "cwm": {
+          "oneOf": [
+            {
+              "const": false
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "file": {
+                  "type": "string"
+                },
+                "size": {
+                  "type": "integer"
+                },
+                "mode": {
+                  "enum": [
+                    "all",
+                    "hires"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        "json": {
+          "type": [
+            "boolean",
+            "string"
+          ]
+        },
+        "signatures": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "dat": {
+              "type": [
+                "integer",
+                "string"
+              ]
+            },
+            "spr": {
+              "type": [
+                "integer",
+                "string"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "validate": {
+      "oneOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "const": "strict"
+        }
+      ]
+    }
+  }
+}
