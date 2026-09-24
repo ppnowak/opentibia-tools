@@ -1,11 +1,13 @@
 # OpenTibia Tools
 
 Toolkit for Tibia client files — `Tibia.dat`, `Tibia.spr` and OTClientV8's `Tibia.cwm` — for **every protocol
-version from 7.10 to 15.x**, with:
+version from 7.10 to 15.x**:
 
-- a **PWA** that edits clients directly in the browser (nothing is uploaded, works offline, installable),
-- a **CLI** for scripting (unpack/pack, convert between versions, sprite export, CWM, outfit pipeline),
-- a shared, dependency-light **TypeScript core** (`src/core`) that runs in Node and browsers.
+- **OpenTibia Tools editor**: an installable, offline-capable editor that runs in the browser
+  (nothing is uploaded) — <https://ppnowak.github.io/opentibia-tools/>
+- **`opentibia-tools` CLI and GitHub Action** for scripts and CI: validate, diff, convert and build clients from
+  dat/spr/cwm/json sources
+- a shared, dependency-light **TypeScript core** (`src/core`) that runs in Node and browsers
 
 Every data pack from <https://downloads.ots.me/data/tibia-clients/dat_and_spr/> (100 packs, 7.10 → 15.10) is
 verified to load and re-save **byte for byte**, and to convert to 7.40, 7.72, 8.54, 8.60 and 10.98
@@ -13,15 +15,15 @@ verified to load and re-save **byte for byte**, and to convert to 7.40, 7.72, 8.
 
 ## Supported protocols
 
-| Versions      | dat layout                                                                   |
-| ------------- | ---------------------------------------------------------------------------- |
-| 7.10 – 7.30   | v1: original flag set, no pattern Z                                          |
-| 7.40 – 7.50   | v2: hangable/hooks added                                                      |
-| 7.55 – 7.72   | v3: ground border, pattern Z, offsets with data                              |
-| 7.80 – 8.54   | v4: chargeable flag (8.50+: ignore look)                                     |
-| 8.55 – 9.86   | v5: translucent, cloth, market; 9.60+ **extended** (u32 sprite ids & count)  |
-| 10.00 – 15.x  | v6: no-move-animation, default action, wrap, top effect, usable              |
-|               | 10.50+ **improved animations** (frame durations), 10.57+ outfit **frame groups** |
+| Versions      | dat layout                                                                        |
+| ------------- | --------------------------------------------------------------------------------- |
+| 7.10 – 7.30   | v1: original flag set, no pattern Z                                               |
+| 7.40 – 7.50   | v2: hangable/hooks added                                                          |
+| 7.55 – 7.72   | v3: ground border, pattern Z, offsets with data                                   |
+| 7.80 – 8.54   | v4: chargeable flag (8.50+: ignore look)                                          |
+| 8.55 – 9.86   | v5: translucent, cloth, market; 9.60+ **extended** (u32 sprite ids & count)       |
+| 10.00 – 15.x  | v6: no-move-animation, default action, wrap, top effect, usable                   |
+|               | 10.50+ **improved animations** (frame durations), 10.57+ outfit **frame groups**  |
 
 Layout options (`extended`, `transparency`, `improved animations`, `frame groups`) can be overridden for custom
 clients (e.g. OTClient builds with extended sprites or alpha channel on 8.60). When the version is not given it is
@@ -34,11 +36,10 @@ published packs don't match their label — e.g. the "10.00" pack uses the 10.57
 npm install
 ```
 
-Requires Node.js 18+ (the CLI runs TypeScript through `tsx`, no build step).
+Requires Node.js 18+. `npm install` also builds the standalone CLI (`dist-cli/opentibia-tools.mjs`). To get the
+`opentibia-tools` command globally: `npm install -g github:ppnowak/opentibia-tools`.
 
-## Web app (PWA)
-
-Live version: **<https://ppnowak.github.io/opentibia-tools/>** (installable, works offline).
+## Editor
 
 ```
 npm run dev       # development server
@@ -46,73 +47,134 @@ npm run build     # production build in ./dist (static files, deploy anywhere)
 npm run preview   # serve the production build
 ```
 
-Every push to `main` builds the app and publishes it to the `gh-pages` branch
+Every push to `main` publishes the editor to GitHub Pages via the `gh-pages` branch
 (`.github/workflows/pages.yml`; repository Settings → Pages → "Deploy from a branch" → `gh-pages`).
 
-Features:
+The editor is laid out like an IDE:
 
-- **Open** `Tibia.dat` + `Tibia.spr` (+ optional `Tibia.cwm`) by drag & drop, file picker, or "Open with…" once
-  installed. Auto-detects the version or lets you pick it (with layout overrides). dat-only and spr-only work too.
-- **Preload a data pack**: pick any of the 100 packs published at downloads.ots.me and click *Preload*. The
-  pack is downloaded by your own browser straight from downloads.ots.me to your computer and extracted locally
-  (a `.zip` can also be dropped/picked anywhere a client is opened). OpenTibia Tools never hosts, mirrors or
-  proxies client files. Because downloads.ots.me does not allow cross-site script access, the zip is saved as a
-  normal browser download and you open it with *Open downloaded …zip*; if the server ever enables CORS, the pack
-  is fetched and opened in one step.
-- **Browse** items, outfits, effects, missiles and sprites in fast virtualized grids (50k+ things, 680k+ sprites).
-- **Preview** with animation (using the file's frame durations), directions/patterns/addons/mounts, layers,
-  outfit colorization with the Tibia palette, zoom, backgrounds and high-res CWM sprites.
-- **Edit** every flag supported by the client version (light, offset, market, …), frame group dimensions, idle /
-  moving groups and animation timings. Undo/redo (Ctrl+Z / Ctrl+Shift+Z).
-- **Sprites**: replace a single tile or a whole frame by dropping an image, append sprites, export PNG / zip, find
-  which things use a sprite. Images larger than 32px (e.g. 64px art) keep a high-resolution copy for CWM output.
-- **Create things from images**: animation frames, directional outfit frames (including the classic
-  `11.png … 43.png` layout, optional color template layer) or sprite sheets.
-- **Import from another client** of any version: pick things in a second client and copy them (with sprites)
-  into the open one — converted automatically (flags, frame groups, animations).
-- **Things bundles** (`*.otthings.json`): portable export/import of things with their sprites.
-- **Save / compile** to the same or **any other protocol version**, with a conversion report and optional
-  `Tibia.cwm` (all sprites upscaled, or only high-res ones). Saves into a folder (File System Access API) or as
-  downloads.
-- **CWM packer**: inspect/extract `.cwm` files, pack PNG folders, build a CWM from the open client.
+| Area            | What it does                                                                                                     |
+| --------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Menu bar        | File / Edit / View / Tools / Help with keyboard shortcuts; **Ctrl+Shift+P** command palette (also "item 2400")    |
+| Activity bar    | Switches the side bar between Explorer, Sprites, Library and Data Packs                                          |
+| Explorer        | Items / outfits / effects / missiles with id, range, market-name and flag filters, multi-select, context menu     |
+| Sprites         | All sprites; add sprites from images                                                                             |
+| Library         | A second client of **any version**: select things, **Ctrl+C**, then **Ctrl+V** into the edited client (converted) |
+| Data Packs      | Preload any pack from downloads.ots.me (see below)                                                               |
+| Editor tabs     | Preview tabs (single click) and pinned tabs (double-click) for things, sprites, the CWM packer and reference docs |
+| Thing editor    | Animated preview, directions/addons/mounts/layers, zoom, backgrounds, high-res (CWM) view, frame timeline, sprite tiles (drop images to replace) |
+| Inspector       | Properties, flags (filterable), frame group sizes, animation timing, outfit preview colors                       |
+| Panel           | **Problems** (validation, click to jump) and **Output** (log of everything that happened)                        |
+| Status bar      | Client version and layout, problem counts, unsaved state, clipboard, selection                                    |
+
+Other features: undo/redo, drag & drop of files anywhere, create things from images (animation frames, directional
+outfits including the classic `11.png … 43.png` layout, sprite sheets), sprite sheet export/import, things bundles
+(`*.otthings.json`), **Save** (Ctrl+S, remembers the folder) and **Save As / Convert** to any protocol version with
+an optional `Tibia.cwm`.
+
+### Data packs
+
+Pick a pack in the Data Packs view and click *Open* (or *Into Library*). The pack is downloaded by **your own
+browser straight from downloads.ots.me to your computer** and extracted locally — OpenTibia Tools never hosts,
+mirrors or proxies client files. Because downloads.ots.me does not allow cross-site script access, the zip is saved
+as a normal download and you open it with *Open …zip*; if the server ever enables CORS, packs open in one step.
+Pack `.zip` files can also be dropped on the window.
 
 ## CLI
 
-All commands accept `--client=<version>` (auto-detected when omitted) and layout overrides
-`--extended`, `--transparency`, `--improved-animations`, `--frame-groups` (use `--no-…` to disable).
-`npm run versions` lists every supported version.
-
 ```
-# dat <-> JSON
-npm run unpack-dat -- ./binary/Tibia.dat ./binary/Tibia.json [--client=8.60]
-npm run pack-dat   -- ./binary/Tibia.json ./binary/NewTibia.dat [--target=10.98]
-
-# sprites
-npm run unpack-spr -- ./binary/Tibia.spr ./sprites/tibia [--format=png|bmp] [--size=64]
-npm run pack-spr   -- ./sprites/tibia ./binary/Tibia.spr --client=8.60 [base Tibia.spr]
-npm run convert-to-png -- ./sprites/tibia ./sprites/png64 64      # bmp/png -> png, magenta -> transparent
-
-# OTClientV8 high resolution sprites
-npm run unpack-cwm -- ./binary/Tibia.cwm ./sprites/tibia-cwm
-npm run pack-cwm   -- ./sprites/png64 ./binary/Tibia.cwm
-npm run spr-to-cwm -- ./binary/Tibia.spr ./binary/Tibia.cwm --size=64 [--resize=nearest|bilinear]
-
-# whole clients
-npm run info    -- ./binary/Tibia.dat ./binary/Tibia.spr
-npm run convert -- ./760/Tibia.dat ./760/Tibia.spr ./out --target=8.60
-
-# copying things between versions
-npm run cli -- --mode=export-things ./1098/Tibia.dat ./1098/Tibia.spr outfits.otthings.json --category=outfit --ids=128-140
-npm run cli -- --mode=import-things ./860/Tibia.dat ./860/Tibia.spr outfits.otthings.json ./out
-npm run cli -- --mode=export-images ./860/Tibia.dat ./860/Tibia.spr ./png --category=item --ids=100-200
+opentibia-tools <command> <args> [options]     # or: npx tsx src/cli/index.ts <command> ...
+opentibia-tools help
 ```
 
-`unpack-dat` JSON is version independent: it stores canonical flag names (`ground`, `light`, `market`, …) and
-can be packed into another version with `--target`.
+`<client>` can be `Tibia.dat Tibia.spr`, `Tibia.json [Tibia.spr]`, a directory containing `Tibia.dat`/`Tibia.spr`
+(`Tibia.cwm` is picked up too) or a source tree created by `unpack-client`.
+
+| Command | Description |
+| --- | --- |
+| `info <client>` | Version, layout, signatures and counts |
+| `validate <client> [--cwm=f] [--strict] [--empty-things]` | Structural checks; exit 1 on errors (`--strict`: warnings too) |
+| `diff <client A> <client B> [--fail-on-change]` | Added / removed / changed things (flags, sizes, sprites) and sprites |
+| `convert <client> <out dir> --target=10.98` | Convert to another protocol version |
+| `build <manifest.json> [--out=dir]` | Build a client from a declarative manifest (see below) |
+| `unpack-client <client> <dir>` | Git-friendly source tree: `client.json`, `Tibia.json`, `sprites/<id>.png`, `hires/<id>.png` |
+| `pack-client <dir> <out dir> [--target=v]` | Compile a source tree back to `Tibia.dat`/`.spr`(/`.cwm`) |
+| `unpack-dat` / `pack-dat` | dat ↔ version-independent JSON (`pack-dat --target` converts) |
+| `unpack-spr` / `pack-spr` | spr ↔ `<id>.png`/`.bmp` images |
+| `unpack-cwm` / `pack-cwm` / `spr-to-cwm` | OTClientV8 high-res sprites |
+| `convert-to-png <from> <to> [size]` | bmp/png → png, magenta → transparent, resize |
+| `export-images`, `export-things`, `import-things` | Render things; copy things between clients via bundles |
+| `e2e` | The `.env` outfit pipeline (below) |
+| `versions` | Supported protocol versions |
+
+Common options: `--client=<version>` (auto-detected when omitted), `--extended`, `--transparency`,
+`--improved-animations`, `--frame-groups` (`--no-…` to disable), `--json` (machine readable output on stdout,
+logs on stderr). Exit codes: `0` success, `1` failure or validation errors, `2` usage error. When
+`GITHUB_STEP_SUMMARY` is set, `info`, `validate`, `diff` and `build` append a Markdown report to the job summary.
+
+The original commands keep working unchanged: `npm run unpack-dat -- ./binary/Tibia.dat ./binary/Tibia.json`,
+`npm run pack-dat …`, `npm run unpack-spr …`, `npm run convert-to-png …`, `npm run unpack-cwm …`,
+`npm run pack-cwm …`, `npm run e2e`, as well as the `--mode=<command>` form.
+
+### Build manifests
+
+`opentibia-tools build client.build.json` assembles a client declaratively — ideal for keeping a custom client in
+git and producing the binaries in CI. Paths are relative to the manifest; the schema is
+[`schemas/build.schema.json`](schemas/build.schema.json) (add `"$schema"` for editor completion).
+
+```json
+{
+  "$schema": "https://ppnowak.github.io/opentibia-tools/schemas/build.schema.json",
+  "client": "8.60",
+  "base": { "dat": "original/Tibia.dat", "spr": "original/Tibia.spr" },
+  "things": ["bundles/"],
+  "outfits": [{ "images": "outfits/wizard", "looktype": 1000 }],
+  "objects": [{ "category": "item", "images": "items/torch", "id": 30001, "flags": { "light": { "level": 6, "color": 206 } } }],
+  "sprites": "sprite-overrides/",
+  "patches": [{ "category": "item", "id": "2400-2410", "set": { "pickupable": true }, "unset": ["unmoveable"] }],
+  "output": { "dir": "build", "client": "10.98", "cwm": { "size": 64, "mode": "all" }, "json": true },
+  "validate": "strict"
+}
+```
+
+- `base`: `dat`+`spr`, `json` (+`spr`) or `source` (an `unpack-client` tree); omit it to start from an empty client.
+- `things`: `*.otthings.json` bundles (or folders of them) to append.
+- `outfits`: folders of `<direction><frame>.png` (1 = south, 2 = east, 3 = west, 4 = north); `looktype` replaces
+  that outfit or pads up to it, so builds are repeatable. 64px images become high-res CWM sprites.
+- `objects`: items/effects/missiles from images (one per animation frame).
+- `sprites`: `<id>.png` replacements. `patches`: set/unset flags on ids or ranges.
+- `output`: target version, file names, `cwm` (`false`, or size and `all`/`hires`), `json`, signatures.
+- `validate`: `true` (default) fails on errors, `"strict"` also on warnings.
+
+A complete example lives in [`examples/ci`](examples/ci).
+
+### GitHub Action
+
+```yaml
+- uses: ppnowak/opentibia-tools@main
+  with:
+    args: build client.build.json --out=build
+
+- uses: ppnowak/opentibia-tools@main
+  with:
+    args: validate build/Tibia.dat build/Tibia.spr --cwm=build/Tibia.cwm --strict
+
+- uses: ppnowak/opentibia-tools@main      # on pull requests: what changed?
+  with:
+    args: diff release/Tibia.dat release/Tibia.spr build/Tibia.dat build/Tibia.spr
+
+- id: info
+  uses: ppnowak/opentibia-tools@main
+  with:
+    args: info build --json                  # JSON available as steps.info.outputs.json
+```
+
+Inputs: `args` (required), `node-version` (default 22), `working-directory`. See
+[`examples/ci/workflow.yml`](examples/ci/workflow.yml) for a full workflow; this repository's own CI runs the
+action against the example on every push.
 
 ### E2E outfit adding
 
-Create a `.env` file:
+The original `.env` pipeline still works (a build manifest is the recommended replacement). Create `.env`:
 
 ```
 ORIGINAL_TIBIA_DAT_DIR=./binary/Tibia.dat
@@ -129,24 +191,8 @@ OUTFITS_0=./sprites/first-outfit
 OUTFITS_1=./sprites/second-outfit
 ```
 
-Each outfit directory holds `<direction><frame>.png` files (direction 1 = south, 2 = east, 3 = west, 4 = north):
-
-```
-directory
--> 11.png 12.png 13.png
--> 21.png 22.png 23.png
--> 31.png 32.png 33.png
--> 41.png 42.png 43.png
-```
-
-Images may be 32px or high resolution (e.g. 64px): the 32px version goes to `Tibia.spr`, the original to
-`Tibia.cwm`. Clients with frame groups (10.57+) get an idle group (frame 1) and a moving group (the rest).
-
-```
-npm run e2e
-```
-
-Writes `Tibia.dat`, `Tibia.spr` and `Tibia.cwm` to `BINARIES_PUBLISH_DIR`. All paths accept unix and windows styles.
+Each outfit directory holds `<direction><frame>.png` files (`11.png` … `43.png`). Run `npm run e2e`; it writes
+`Tibia.dat`, `Tibia.spr` and `Tibia.cwm` to `BINARIES_PUBLISH_DIR`.
 
 ## File formats
 
@@ -161,18 +207,23 @@ Writes `Tibia.dat`, `Tibia.spr` and `Tibia.cwm` to `BINARIES_PUBLISH_DIR`. All p
 ## Development
 
 ```
-npm test              # unit tests
+npm test                                             # unit + CLI integration tests
 npm run typecheck
 TIBIA_PACKS_DIR=./packs npm test                     # + round-trip tests on extracted real packs
 npm run verify-packs -- [--versions=710,860] [--keep] # download & verify all published packs
+npm run build:cli                                    # rebuild dist-cli/opentibia-tools.mjs
 ```
 
-Project layout:
-
 ```
-src/core     dat/spr/cwm codecs, version registry & detection, conversion, rendering, builders, Project API
-src/cli      command line tools (index.ts) and the e2e outfit pipeline (e2e.ts)
-web          PWA (Preact + Vite + vite-plugin-pwa)
-scripts      pack verification, icon generation
+src/core     codecs, version registry & detection, conversion, validation, diff, rendering, builders, Project API
+src/cli      opentibia-tools command line (index.ts), build manifests, client source trees, e2e pipeline
+web          editor (Preact + Vite + vite-plugin-pwa)
+schemas      JSON schema of build manifests
+examples/ci  example client sources, manifest and workflow
 test         vitest suites
 ```
+
+## Legal
+
+OpenTibia Tools does not include, host, mirror or redistribute any Tibia client files. Tibia is a trademark of
+CipSoft GmbH; this project is not affiliated with CipSoft.

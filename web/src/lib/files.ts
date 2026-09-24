@@ -53,27 +53,42 @@ export interface OutputFile {
   data: Uint8Array | Uint8Array[];
 }
 
-interface DirectoryHandle {
+export interface DirectoryHandle {
+  name: string;
   getFileHandle(name: string, opts: { create: boolean }): Promise<{ createWritable(): Promise<{ write(d: BlobPart): Promise<void>; close(): Promise<void> }> }>;
+  requestPermission?(opts: { mode: 'readwrite' }): Promise<PermissionState>;
 }
 
 export const canPickDirectory = typeof window !== 'undefined' && 'showDirectoryPicker' in window;
 
+/** Ask the user for a folder (File System Access API); null when cancelled or unsupported. */
+export async function pickDirectory(): Promise<DirectoryHandle | null> {
+  if (!canPickDirectory) return null;
+  try {
+    return await (window as unknown as { showDirectoryPicker(o: object): Promise<DirectoryHandle> }).showDirectoryPicker({ mode: 'readwrite' });
+  } catch {
+    return null;
+  }
+}
+
+export async function writeToDirectory(dir: DirectoryHandle, outputs: OutputFile[]): Promise<void> {
+  if (dir.requestPermission && (await dir.requestPermission({ mode: 'readwrite' })) !== 'granted') {
+    throw new Error(`No permission to write into ${dir.name}`);
+  }
+  for (const f of outputs) {
+    const handle = await dir.getFileHandle(f.name, { create: true });
+    const w = await handle.createWritable();
+    await w.write(new Blob((Array.isArray(f.data) ? f.data : [f.data]) as BlobPart[]));
+    await w.close();
+  }
+}
+
 /** Save several files: into a user picked directory when supported, otherwise as downloads. */
 export async function saveFiles(outputs: OutputFile[], preferDirectory = true): Promise<'directory' | 'download' | 'cancelled'> {
   if (preferDirectory && canPickDirectory) {
-    let dir: DirectoryHandle;
-    try {
-      dir = await (window as unknown as { showDirectoryPicker(o: object): Promise<DirectoryHandle> }).showDirectoryPicker({ mode: 'readwrite' });
-    } catch {
-      return 'cancelled';
-    }
-    for (const f of outputs) {
-      const handle = await dir.getFileHandle(f.name, { create: true });
-      const w = await handle.createWritable();
-      await w.write(new Blob((Array.isArray(f.data) ? f.data : [f.data]) as BlobPart[]));
-      await w.close();
-    }
+    const dir = await pickDirectory();
+    if (!dir) return 'cancelled';
+    await writeToDirectory(dir, outputs);
     return 'directory';
   }
   for (const f of outputs) download(f.name, f.data);

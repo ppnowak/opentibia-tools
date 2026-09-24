@@ -15,3 +15,5 @@ export * from './convert.ts';
 export * from './builder.ts';
 export * from './project.ts';
 export * from './json.ts';
+export * from './validate.ts';
+export * from './diff.ts';

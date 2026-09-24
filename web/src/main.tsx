@@ -3,8 +3,7 @@ import { App } from './app.tsx';
 import './styles.css';
 import { registerSW } from 'virtual:pwa-register';
 import { toast } from './state.ts';
-import { classifyFiles, openClient, openJson } from './lib/loader.ts';
-import { expandZips } from './lib/packs.ts';
+import { openFiles } from './lib/loader.ts';
 
 render(<App />, document.getElementById('app')!);
 
@@ -13,7 +12,7 @@ const updateSW = registerSW({
     if (confirm('A new version of OpenTibia Tools is available. Reload now?')) void updateSW(true);
   },
   onOfflineReady() {
-    toast('Ready to work offline', 'success');
+    toast('Ready to work offline');
   },
 });
 
@@ -23,9 +22,5 @@ interface LaunchParams {
 }
 const launchQueue = (window as unknown as { launchQueue?: { setConsumer(cb: (p: LaunchParams) => void): void } }).launchQueue;
 launchQueue?.setConsumer(async (params) => {
-  if (!params.files.length) return;
-  const { files: list, version } = await expandZips(await Promise.all(params.files.map((h) => h.getFile())));
-  const req = classifyFiles(list);
-  if (req.dat || req.spr) await openClient({ ...req, version });
-  else if (req.json) await openJson(req.json);
+  if (params.files.length) await openFiles(await Promise.all(params.files.map((h) => h.getFile())));
 });

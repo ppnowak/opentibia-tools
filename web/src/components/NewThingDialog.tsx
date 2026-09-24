@@ -6,7 +6,7 @@ import { SPRITE_SIZE } from '../../../src/core/spr/spr.ts';
 import { paintFit } from '../lib/canvas.ts';
 import { decodeImageFile, filesFromDrop, pickFiles } from '../lib/files.ts';
 import { closeDialog, commitAdd, project, select, toast, touch, withBusy } from '../state.ts';
-import { Modal } from './Dialogs.tsx';
+import { Modal } from './ui.tsx';
 
 type Mode = 'frames' | 'outfit' | 'sheet';
 

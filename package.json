@@ -42,6 +42,7 @@
     "@preact/signals": "^2.11.2",
     "@types/node": "^26.6.2",
     "@types/yargs": "^17.0.35",
+    "lucide-preact": "^1.48.0",
     "preact": "^10.29.8",
     "tsx": "^4.23.15",
     "typescript": "^7.0.2",

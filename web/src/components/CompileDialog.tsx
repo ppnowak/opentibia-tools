@@ -5,7 +5,7 @@ import { signatureFor } from '../../../src/core/signatures.ts';
 import { versionLabel } from '../../../src/core/versions.ts';
 import { canPickDirectory, saveFiles, type OutputFile } from '../lib/files.ts';
 import { dirty, project, toast, withBusy } from '../state.ts';
-import { Modal } from './Dialogs.tsx';
+import { Modal } from './ui.tsx';
 import { VersionPicker, type VersionChoice } from './VersionPicker.tsx';
 
 const hex = (n: number) => `0x${(n >>> 0).toString(16).toUpperCase()}`;
