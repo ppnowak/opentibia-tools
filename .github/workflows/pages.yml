@@ -30,6 +30,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          cp -r schemas dist/schemas
           cd dist
           touch .nojekyll
           git init -q -b gh-pages

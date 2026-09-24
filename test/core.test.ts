@@ -326,3 +326,30 @@ describe('builder & project', () => {
     expect(q.dat.items).toHaveLength(3);
   });
 });
+
+describe('validation & diff', () => {
+  it('reports broken references and passes valid clients', async () => {
+    const { validateClient } = await import('../src/core/validate.ts');
+    const p = project(860);
+    expect(validateClient({ dat: p.dat, features: p.features, spr: p.spr }).errors).toBe(0);
+    p.dat.items[0].groups[0].sprites[0] = 500;
+    p.dat.items[1].flags.usable = true; // not supported by 8.60
+    const r = validateClient({ dat: p.dat, features: p.features, spr: p.spr });
+    expect(r.problems.map((x) => x.code)).toEqual(expect.arrayContaining(['missing-sprite', 'unsupported-flag']));
+    expect(r.errors).toBe(1);
+    expect(r.warnings).toBe(1);
+  });
+
+  it('diffs things and sprites', async () => {
+    const { diffDat, diffSprites } = await import('../src/core/diff.ts');
+    const a = project(860);
+    const b = project(860);
+    b.dat.items[0].flags.pickupable = true;
+    b.dat.effects.push({ ...b.dat.effects[0], id: 2 });
+    b.spr.setPixels(2, testSprite(77));
+    const d = diffDat(a.dat, b.dat);
+    expect(d.changed).toEqual([{ category: 'item', id: 100, changes: ['+ Pickupable'] }]);
+    expect(d.added).toEqual([{ category: 'effect', id: 2 }]);
+    expect(diffSprites(a.spr, b.spr).changed).toEqual([2]);
+  });
+});

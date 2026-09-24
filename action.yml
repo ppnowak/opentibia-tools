@@ -1,0 +1,51 @@
+name: OpenTibia Tools
+description: Validate, diff, convert and build Tibia client files (dat/spr/cwm/json) for protocols 7.10 - 15.x
+author: ppnowak
+branding:
+  icon: package
+  color: orange
+
+inputs:
+  args:
+    description: >-
+      Command line for opentibia-tools, e.g. "validate client/Tibia.dat client/Tibia.spr --strict"
+      or "build client.build.json". Run "help" for all commands.
+    required: true
+  node-version:
+    description: Node.js version used to run the tool
+    default: '22'
+  working-directory:
+    description: Directory the command runs in (paths in args are relative to it)
+    default: '.'
+
+outputs:
+  json:
+    description: Output of the command when "--json" is part of args
+    value: ${{ steps.run.outputs.json }}
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.node-version }}
+    - name: Install opentibia-tools
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      run: npm ci --no-audit --no-fund --loglevel=error
+    - name: Run opentibia-tools
+      id: run
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        OTT_ARGS: ${{ inputs.args }}
+        OTT_CLI: ${{ github.action_path }}/dist-cli/opentibia-tools.mjs
+      run: |
+        set -o pipefail
+        eval "set -- $OTT_ARGS"
+        if [[ " $* " == *" --json "* ]]; then
+          node "$OTT_CLI" "$@" | tee "$RUNNER_TEMP/opentibia-tools.json"
+          { echo 'json<<OTT_EOF'; cat "$RUNNER_TEMP/opentibia-tools.json"; echo 'OTT_EOF'; } >> "$GITHUB_OUTPUT"
+        else
+          node "$OTT_CLI" "$@"
+        fi

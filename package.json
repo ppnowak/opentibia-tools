@@ -21,9 +21,16 @@
     "spr-to-cwm": "tsx src/cli/index.ts --mode=spr-to-cwm",
     "convert": "tsx src/cli/index.ts --mode=convert",
     "info": "tsx src/cli/index.ts --mode=info",
-    "e2e": "tsx src/cli/e2e.ts",
+    "e2e": "tsx src/cli/index.ts e2e",
     "verify-packs": "tsx scripts/verify-packs.ts",
-    "versions": "tsx src/cli/index.ts --mode=versions"
+    "versions": "tsx src/cli/index.ts --mode=versions",
+    "build:cli": "vite build -c vite.cli.config.ts",
+    "prepare": "vite build -c vite.cli.config.ts --logLevel warn",
+    "validate": "tsx src/cli/index.ts validate",
+    "diff": "tsx src/cli/index.ts diff",
+    "build-client": "tsx src/cli/index.ts build",
+    "unpack-client": "tsx src/cli/index.ts unpack-client",
+    "pack-client": "tsx src/cli/index.ts pack-client"
   },
   "author": "czarnowidz",
   "license": "ISC",
@@ -32,6 +39,7 @@
   },
   "devDependencies": {
     "@preact/preset-vite": "^2.10.6",
+    "@preact/signals": "^2.11.2",
     "@types/node": "^26.6.2",
     "@types/yargs": "^17.0.35",
     "preact": "^10.29.8",
@@ -42,9 +50,18 @@
     "vitest": "^5.0.1"
   },
   "dependencies": {
-    "@preact/signals": "^2.11.2",
     "dotenv": "^18.0.3",
     "fflate": "^0.8.3",
     "yargs": "^18.2.0"
-  }
+  },
+  "bin": {
+    "opentibia-tools": "dist-cli/opentibia-tools.mjs"
+  },
+  "files": [
+    "dist-cli",
+    "src",
+    "schemas",
+    "action.yml",
+    "README.md"
+  ]
 }

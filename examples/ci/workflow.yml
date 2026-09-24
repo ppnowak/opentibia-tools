@@ -1,0 +1,41 @@
+# Example workflow for a repository that keeps its client sources in git.
+# Copy to .github/workflows/client.yml and adjust paths.
+name: Client
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  client:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Build Tibia.dat / Tibia.spr / Tibia.cwm from client.build.json (fails on validation errors)
+      - uses: ppnowak/opentibia-tools@main
+        with:
+          args: build client.build.json --out=build
+
+      # Validate the result (writes a report to the job summary; --strict also fails on warnings)
+      - uses: ppnowak/opentibia-tools@main
+        with:
+          args: validate build/Tibia.dat build/Tibia.spr --cwm=build/Tibia.cwm --strict
+
+      # On pull requests: list what changed compared to the released client
+      - if: github.event_name == 'pull_request'
+        uses: ppnowak/opentibia-tools@main
+        with:
+          args: diff release/Tibia.dat release/Tibia.spr build/Tibia.dat build/Tibia.spr
+
+      # Machine readable output is available as steps.<id>.outputs.json
+      - id: info
+        uses: ppnowak/opentibia-tools@main
+        with:
+          args: info build --json
+      - run: echo "Built client with ${{ fromJSON(steps.info.outputs.json).sprites }} sprites"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: client
+          path: build/

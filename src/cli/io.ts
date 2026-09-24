@@ -3,7 +3,18 @@ import { dirname, extname } from 'node:path';
 import { decodeBmp, encodeBmp, flattenAlpha, type RgbaImage } from '../core/image/image.ts';
 import { decodePng, encodePng } from '../core/image/png.ts';
 
-export const log = (msg: string): void => console.log(`[${new Date().toISOString()}] ${msg}`);
+let jsonMode = false;
+
+/** In JSON mode stdout is reserved for machine readable output, so logs go to stderr. */
+export function setJsonMode(on: boolean): void {
+  jsonMode = on;
+}
+
+export const log = (msg: string): void => {
+  const line = `[${new Date().toISOString()}] ${msg}`;
+  if (jsonMode) console.error(line);
+  else console.log(line);
+};
 
 export function readBytes(path: string): Uint8Array {
   const b = readFileSync(path);

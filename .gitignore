@@ -16,3 +16,4 @@ dist
 /packs
 /out
 *.otthings.json
+dist-cli
