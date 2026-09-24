@@ -1,0 +1,16 @@
+{
+  "$schema": "../../schemas/build.schema.json",
+  "client": "8.60",
+  "outfits": [{ "images": "outfit", "looktype": 1 }],
+  "objects": [
+    {
+      "category": "item",
+      "images": "torch",
+      "id": 100,
+      "flags": { "pickupable": true, "light": { "level": 6, "color": 206 }, "animateAlways": true }
+    }
+  ],
+  "patches": [{ "category": "item", "id": 100, "set": { "minimap": 206 } }],
+  "output": { "dir": "../../out/ci-example", "json": true, "cwm": { "size": 64, "mode": "all" } },
+  "validate": "strict"
+}

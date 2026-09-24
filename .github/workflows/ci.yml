@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+
+  # Exercises the reusable action exactly like a client repository would.
+  action:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Build example client
+        uses: ./
+        with:
+          args: build examples/ci/client.build.json --out=out/example
+      - name: Validate
+        uses: ./
+        with:
+          args: validate out/example/Tibia.dat out/example/Tibia.spr --cwm=out/example/Tibia.cwm --strict
+      - name: Convert to 10.98
+        uses: ./
+        with:
+          args: convert out/example out/example-1098 --target=10.98
+      - name: Diff
+        uses: ./
+        with:
+          args: diff out/example out/example-1098
+      - name: Info (JSON output)
+        id: info
+        uses: ./
+        with:
+          args: info out/example-1098 --json
+      - name: Check action output
+        # 10.97 / 10.98 share a signature, so check the converted layout instead of the label
+        run: |
+          test "${{ fromJSON(steps.info.outputs.json).features.frameGroups }}" = "true"
+          test "${{ fromJSON(steps.info.outputs.json).counts.outfit }}" = "1"
